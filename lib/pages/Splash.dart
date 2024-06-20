@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:aslcom/pages/Home.dart';
 import 'package:aslcom/pages/Onboarding.dart';
 import 'package:aslcom/utils/customs/MySIzes.dart';
@@ -20,12 +22,21 @@ class SplashState extends State<Splash> {
   void loadPreferences()async{
     var sharedPref = await SharedPreferences.getInstance();
     bool firstTime = await sharedPref.getBool(FIRSTTIME)??false;
-    if (firstTime){
-      Get.offAll(const Home());
-    }
-    else{
+
+    if(!firstTime){
       Get.offAll(const Onboarding());
     }
+    Timer(
+      const Duration(seconds: 3),
+          () async {
+            if (!firstTime) {
+              Get.offAll(const Onboarding());
+            }
+            else{
+              Get.offAll(const Home());
+            }
+          }
+    );
   }
 
   @override
@@ -39,42 +50,23 @@ class SplashState extends State<Splash> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(),
-          Center(
-            child: Padding(
-              padding: EdgeInsets.only(top: screenWidth * 0.15),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: MySizes(context).avidia,
-                    height: MySizes(context).avidia,
-                    child: Image.asset('assets/company/company.png'),
-                  ),
-                  SizedBox(
-                    width: 90,
-                    height: 90,
-                    child: Lottie.asset('assets/company/splash.json'),
-                  ),
-                ],
-              ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: MySizes(context).avidia,
+              height: MySizes(context).avidia,
+              child: Image.asset('assets/company/company.png'),
             ),
-          ),
-          // Align(
-          //   alignment: Alignment.bottomCenter,
-          //   child: Padding(
-          //     padding: EdgeInsets.only(top: MySizes(context).standardPadding),
-          //     child: SizedBox(
-          //       width: 100,
-          //       height: 100,
-          //       child: Image.asset('assets/company/Noobsverse.png'),
-          //     ),
-          //   ),
-          // )
-        ],
+            SizedBox(
+              width: 90,
+              height: 90,
+              child: Lottie.asset('assets/company/splash.json'),
+            ),
+          ],
+        ),
       ),
     );
   }

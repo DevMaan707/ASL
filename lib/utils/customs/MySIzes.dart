@@ -57,6 +57,6 @@ class MySizes {
   double get buttonprogressindicator =>
       MediaQuery.of(context).size.width * 0.05;
   //splash
-  double get avidia => MediaQuery.of(context).size.width * 0.45;
+  double get avidia => MediaQuery.of(context).size.width * 0.55;
   double get noobverse => MediaQuery.of(context).size.width * 0.3;
 }
