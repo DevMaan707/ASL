@@ -63,65 +63,71 @@ class _HomeState extends State<Home> {
       body: SingleChildScrollView(
         child: Stack(
           children: [
-            Container(
-              child: Column(
-                children: [
-                  Container(
-                    width: screenWidth,
-                    height: screenHeight * 0.85,
-                    decoration: const BoxDecoration(
-                      color: Colors.black12,
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Container(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Container(
+                        width: screenWidth*0.8,
+                        height: screenHeight * 0.85,
+                        decoration: const BoxDecoration(
+                          color: Colors.black12,
+                        ),
+                        child: ValueListenableBuilder<List<String>>(
+                          valueListenable: animNotifier,
+                          builder: (context, anim, _) {
+                            return VideoPlayerWidget(anim: anim);
+                          },
+                        ),
+                      ),
                     ),
-                    child: ValueListenableBuilder<List<String>>(
-                      valueListenable: animNotifier,
-                      builder: (context, anim, _) {
-                        return VideoPlayerWidget(anim: anim);
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        SizedBox(
-                          width: screenWidth * 0.7,
-                          child: TextFormField(
-                            onEditingComplete: () async {
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          SizedBox(
+                            width: screenWidth * 0.7,
+                            child: TextFormField(
+                              onEditingComplete: () async {
+                                print("Calling..");
+                                res = await actionX.getAction(textController.text ?? "");
+                                print(res);
+                                _updateAnimations(res);
+                              },
+                              controller: textController,
+                              decoration: InputDecoration(
+                                hintText: "Edit the text..",
+                                prefixIcon: Icon(
+                                  CupertinoIcons.volume_down,
+                                  size: MySizes(context).standardPadding,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
                               print("Calling..");
                               res = await actionX.getAction(textController.text ?? "");
                               print(res);
                               _updateAnimations(res);
                             },
-                            controller: textController,
-                            decoration: InputDecoration(
-                              hintText: "Edit the text..",
-                              prefixIcon: Icon(
-                                CupertinoIcons.volume_down,
-                                size: MySizes(context).standardPadding,
-                              ),
-                            ),
+                            icon: Icon(Icons.send),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () async {
-                            print("Calling..");
-                            res = await actionX.getAction(textController.text ?? "");
-                            print(res);
-                            _updateAnimations(res);
-                          },
-                          icon: Icon(Icons.send),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            _speechToText.isListening ? _stopListening() : _startListening();
-                          },
-                          icon: Icon(_speechToText.isListening ? Icons.stop : Icons.mic),
-                        )
-                      ],
-                    ),
-                  )
-                ],
+                          IconButton(
+                            onPressed: () {
+                              _speechToText.isListening ? _stopListening() : _startListening();
+                            },
+                            icon: Icon(_speechToText.isListening ? Icons.stop : Icons.mic),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
             Align(
