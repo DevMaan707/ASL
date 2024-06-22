@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 class VideoPlayerWidget extends StatefulWidget {
   final List<String> anim;
   const VideoPlayerWidget({super.key, required this.anim});
+
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
 }
@@ -46,6 +47,17 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   @override
+  void didUpdateWidget(VideoPlayerWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.anim != widget.anim) {
+      _videos = widget.anim;
+      _currentIndex = 0;
+      _controller?.dispose();
+      _initializeAndPlay(_videos[_currentIndex]);
+    }
+  }
+
+  @override
   void dispose() {
     _controller?.dispose();
     super.dispose();
@@ -54,9 +66,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return _controller != null && _controller!.value.isInitialized
-        ? AspectRatio(
-      aspectRatio: _controller!.value.aspectRatio,
-      child: VideoPlayer(_controller!),
+        ? FittedBox(
+      fit: BoxFit.cover,
+      child: SizedBox(
+        width: _controller!.value.size.width,
+        height: _controller!.value.size.height,
+        child: VideoPlayer(_controller!),
+      ),
     )
         : const Center(child: CircularProgressIndicator());
   }

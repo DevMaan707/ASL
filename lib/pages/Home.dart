@@ -1,7 +1,10 @@
+import 'package:aslcom/controllers/action.dart';
+import 'package:aslcom/pages/Camera.dart';
 import 'package:aslcom/pages/VideoPlayer.dart';
 import 'package:aslcom/utils/customs/MySIzes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 class Home extends StatefulWidget {
@@ -15,8 +18,12 @@ class _HomeState extends State<Home> {
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   String wordsSpoken = "";
-  String indicator = "keyboard_voice_rounded";
+  bool indicator = false;
   TextEditingController textController = TextEditingController();
+  ActionX actionX = ActionX();
+  List<String> res = [];
+  ValueNotifier<List<String>> animNotifier = ValueNotifier<List<String>>(["assets/videos/idle.mp4"]); // default idle animation
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +38,9 @@ class _HomeState extends State<Home> {
   void _startListening() async {
     await _speechToText.listen(onResult: _onSpeechResult);
   }
-
+  void _updateAnimations(List<String> animations) {
+    animNotifier.value = animations;
+  }
   void _onSpeechResult(result) {
     setState(() {
       wordsSpoken = "${result.recognizedWords}";
@@ -49,7 +58,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
+  print("HOMEEE");
     return Scaffold(
       body: SingleChildScrollView(
         child: Stack(
@@ -61,35 +70,56 @@ class _HomeState extends State<Home> {
                     width: screenWidth,
                     height: screenHeight * 0.85,
                     decoration: const BoxDecoration(
-                      color: Colors.blue,
+                      color: Colors.black12,
                     ),
-                    child: const VideoPlayerWidget(anim:["assets/videos/idle.mp4"]),
+                    child: ValueListenableBuilder<List<String>>(
+                      valueListenable: animNotifier,
+                      builder: (context, anim, _) {
+                        return VideoPlayerWidget(anim: anim);
+                      },
+                    ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: screenWidth * 0.7,
-                        child: TextFormField(
-                          controller: textController,
-                          decoration: InputDecoration(
-                            hintText: "Edit the text..",
-                            prefixIcon: Icon(
-                              CupertinoIcons.volume_down,
-                              size: MySizes(context).standardPadding,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        SizedBox(
+                          width: screenWidth * 0.7,
+                          child: TextFormField(
+                            onEditingComplete: () async {
+                              print("Calling..");
+                              res = await actionX.getAction(textController.text ?? "");
+                              print(res);
+                              _updateAnimations(res);
+                            },
+                            controller: textController,
+                            decoration: InputDecoration(
+                              hintText: "Edit the text..",
+                              prefixIcon: Icon(
+                                CupertinoIcons.volume_down,
+                                size: MySizes(context).standardPadding,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          _speechToText.isListening ? _stopListening : _startListening;
-                        },
-                        icon: Icon(
-                            _speechToText.isListening ? Icons.stop : Icons.mic
+                        IconButton(
+                          onPressed: () async {
+                            print("Calling..");
+                            res = await actionX.getAction(textController.text ?? "");
+                            print(res);
+                            _updateAnimations(res);
+                          },
+                          icon: Icon(Icons.send),
                         ),
-                      )
-                    ],
+                        IconButton(
+                          onPressed: () {
+                            _speechToText.isListening ? _stopListening() : _startListening();
+                          },
+                          icon: Icon(_speechToText.isListening ? Icons.stop : Icons.mic),
+                        )
+                      ],
+                    ),
                   )
                 ],
               ),
@@ -97,20 +127,42 @@ class _HomeState extends State<Home> {
             Align(
               alignment: Alignment.topRight,
               child: Padding(
-                padding: EdgeInsets.only(top:40),
-                child: (indicator == "keyboard_voice_rounded")
-                    ? IconButton(
-                        onPressed: () {
-                          setState(() {
-                            indicator = "keyboard_voice_rounded";
-                          });
-                        },
-                        icon: const Icon(Icons.keyboard_voice_rounded))
-                    : IconButton(onPressed: () {
-                      setState(() {
-                        indicator = "";
-                      });
-                }, icon: const Icon(Icons.camera),),
+                padding: const EdgeInsets.only(top: 50.0, right: 15),
+                child: PopupMenuButton<bool>(
+                  padding: EdgeInsets.zero,
+                  icon: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black12,
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: const Icon(
+                        Icons.mic,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  itemBuilder: (context) {
+                    return [
+                      PopupMenuItem(
+                        value: !indicator,
+                        child: Icon(indicator ? Icons.mic : Icons.camera),
+                      ),
+                    ];
+                  },
+                  onSelected: (value) {
+                    setState(() {
+                      indicator = value;
+                    });
+                    if (indicator) {
+                      Get.to(const Camera());
+                    } else {
+                      Get.to(const Home());
+                    }
+                  },
+                ),
               ),
             )
           ],
@@ -118,4 +170,5 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-}
+  }
+

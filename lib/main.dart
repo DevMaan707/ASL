@@ -16,7 +16,7 @@ class ASLCom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Avidia Labs',
+      title: 'Berserk Devs',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
       supportedLocales: const [Locale('en', '')],
